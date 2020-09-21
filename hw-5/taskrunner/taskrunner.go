@@ -35,6 +35,7 @@ func Run(tasks []func() error, N int, M int) {
 
 	go func() {
 		wg.Wait()
+		close(errors)
 	}()
 
 	var errNum int
