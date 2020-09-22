@@ -15,11 +15,16 @@ func Run(tasks []func() error, N int, M int) error {
 	abort := make(chan struct{})
 
 	go func() {
-		for _, task := range tasks {
-			ch <- task
-		}
+		defer close(ch)
 
-		close(ch)
+		select {
+		case <-abort:
+			return
+		default:
+			for _, task := range tasks {
+				ch <- task
+			}
+		}
 	}()
 
 	errors := make(chan error, L)
