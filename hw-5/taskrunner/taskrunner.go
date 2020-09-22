@@ -12,6 +12,7 @@ func Run(tasks []func() error, N int, M int) error {
 	}
 
 	ch := make(chan func() error)
+	abort := make(chan struct{})
 
 	go func() {
 		for _, task := range tasks {
@@ -25,7 +26,10 @@ func Run(tasks []func() error, N int, M int) error {
 
 	for i := 0; i < N; i++ {
 		go func() {
-			for task := range ch {
+			select {
+			case <-abort:
+				return
+			case task := <-ch:
 				errors <- task()
 			}
 		}()
@@ -41,6 +45,7 @@ func Run(tasks []func() error, N int, M int) error {
 		}
 
 		if errNum == M {
+			close(abort)
 			return fmt.Errorf("%v tasks returned an error", errNum)
 		}
 	}
