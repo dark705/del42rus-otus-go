@@ -52,6 +52,20 @@ func TestRunExecuteNotMoreNPlusM(t *testing.T) {
 	}
 }
 
+func TestRunReturnErrorByMLimit(t *testing.T) {
+	nTask := 10
+	N := 1000
+	M := 10
+
+	testCh := make(chan string, nTask)
+	tasks := getTasks(nTask, "err", testCh)
+	res := Run(tasks, N, M)
+
+	if res == nil {
+		t.Error("Run() error tasks not return error by M limit")
+	}
+}
+
 func getTasks2(testCh chan string) []func() error {
 
 	tasks := []func() error{func() error {
