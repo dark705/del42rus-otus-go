@@ -51,8 +51,9 @@ func Run(tasks []func() error, N int, M int) error {
 			errNum++
 		}
 
-		if errNum == M {
+		if errNum != 0 && errNum == M {
 			close(abort)
+
 			return fmt.Errorf("%v tasks returned an error", errNum)
 		}
 	}
