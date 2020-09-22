@@ -2,7 +2,6 @@ package taskrunner
 
 import (
 	"fmt"
-	"sync"
 )
 
 func Run(tasks []func() error, N int, M int) error {
@@ -25,14 +24,8 @@ func Run(tasks []func() error, N int, M int) error {
 
 	errors := make(chan error, L)
 
-	var wg sync.WaitGroup
-
 	for i := 0; i < N; i++ {
-		wg.Add(1)
-
 		go func() {
-			defer wg.Done()
-
 			select {
 			case <-abort:
 				return
@@ -44,14 +37,11 @@ func Run(tasks []func() error, N int, M int) error {
 		}()
 	}
 
-	go func() {
-		wg.Wait()
-		close(errors)
-	}()
-
 	var errNum int
 
-	for err := range errors {
+	for i := 0; i < L; i++ {
+		err := <-errors
+
 		if err != nil {
 			errNum++
 		}
