@@ -4,21 +4,22 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"runtime"
 	"strconv"
 	"testing"
 	"time"
 )
 
-//func TestRunAllGoroutinesFinishedByDoneAllTasks(t *testing.T) {
-//	testCh := make(chan string, 3)
-//	tasks := getTasks2(testCh)
-//	_ = Run(tasks, 3, 1)
-//
-//	n := runtime.NumGoroutine() - 2 //-1 main + -1 test itself
-//	if n != 0 {
-//		t.Error("Not all goroutines finished after Run() done by M errors:", n)
-//	}
-//}
+func TestRunAllGoroutinesFinishedByDoneAllTasks(t *testing.T) {
+	testCh := make(chan string, 3)
+	tasks := getTasks2(testCh)
+	_ = Run(tasks, 3, 1)
+
+	n := runtime.NumGoroutine() - 2 //-1 main + -1 test itself
+	if n != 0 {
+		t.Error("Not all goroutines finished after Run() done by M errors:", n)
+	}
+}
 
 func TestRunAllSuccessDone(t *testing.T) {
 	nTask := 10000
