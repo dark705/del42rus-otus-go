@@ -1,10 +1,15 @@
 package taskrunner
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
-func Run(tasks []func() error, N int, M int) {
-	if N > len(tasks) {
-		N = len(tasks)
+func Run(tasks []func() error, N int, M int) error {
+	L := len(tasks)
+
+	if N > L {
+		N = L
 	}
 
 	ch := make(chan func() error)
@@ -19,7 +24,7 @@ func Run(tasks []func() error, N int, M int) {
 		close(ch)
 	}()
 
-	errors := make(chan error, len(tasks))
+	errors := make(chan error, L)
 
 	for i := 0; i < N; i++ {
 		wg.Add(1)
@@ -46,7 +51,9 @@ func Run(tasks []func() error, N int, M int) {
 		}
 
 		if errNum == M {
-			return
+			return fmt.Errorf("%v tasks returned an error", errNum)
 		}
 	}
+
+	return nil
 }
