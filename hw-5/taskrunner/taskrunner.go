@@ -61,7 +61,7 @@ func Run(tasks []func() error, N int, M int) error {
 			errNum++
 		}
 
-		if errNum != 0 && errNum == M {
+		if errNum != 0 && errNum >= M {
 			close(abort)
 			for _, waiter := range waiters {
 				<-waiter
