@@ -53,16 +53,8 @@ func Run(tasks []func() error, N int, M int) error {
 				close(waiter)
 			}()
 
-			for {
-				select {
-				case <-abort:
-					return
-				case task, ok := <-ch:
-					if !ok {
-						return
-					}
-					errors <- task()
-				}
+			for task := range ch {
+				errors <- task()
 			}
 		}(waiter)
 	}
