@@ -5,8 +5,13 @@ import (
 )
 
 func Run(tasks []func() error, N int, M int) error {
-	var abort = make(chan struct{})
+	L := len(tasks)
 
+	if N > L {
+		N = L
+	}
+
+	abort := make(chan struct{})
 	aborted := func() bool {
 		select {
 		case <-abort:
@@ -16,17 +21,18 @@ func Run(tasks []func() error, N int, M int) error {
 		}
 	}
 
-	L := len(tasks)
-
-	if N > L {
-		N = L
-	}
-
 	ch := make(chan func() error)
+	var waiters []chan struct{}
+
+	wait := func() {
+		for _, waiter := range waiters {
+			<-waiter
+		}
+		<-ch
+	}
 
 	go func() {
 		defer close(ch)
-
 		for _, task := range tasks {
 			if aborted() {
 				return
@@ -36,16 +42,12 @@ func Run(tasks []func() error, N int, M int) error {
 	}()
 
 	errors := make(chan error, L)
-
-	var waiters []chan struct{}
-
 	for i := 0; i < N; i++ {
 		waiter := make(chan struct{})
 		waiters = append(waiters, waiter)
 
 		go func(waiter chan struct{}) {
 			defer close(waiter)
-
 			for task := range ch {
 				errors <- task()
 			}
@@ -63,18 +65,12 @@ func Run(tasks []func() error, N int, M int) error {
 
 		if errNum != 0 && errNum >= M {
 			close(abort)
-			for _, waiter := range waiters {
-				<-waiter
-			}
-			<-ch
+			wait()
 			return fmt.Errorf("error")
 		}
 	}
 
-	for _, waiter := range waiters {
-		<-waiter
-	}
-	<-ch
+	wait()
 
 	return nil
 }
