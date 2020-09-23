@@ -28,7 +28,6 @@ func Run(tasks []func() error, N int, M int) error {
 		for _, waiter := range waiters {
 			<-waiter
 		}
-		<-ch
 	}
 
 	go func() {
