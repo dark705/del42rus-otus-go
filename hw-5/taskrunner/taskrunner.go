@@ -4,9 +4,18 @@ import (
 	"fmt"
 )
 
-var abort = make(chan struct{})
-
 func Run(tasks []func() error, N int, M int) error {
+	var abort = make(chan struct{})
+
+	aborted := func() bool {
+		select {
+		case <-abort:
+			return true
+		default:
+			return false
+		}
+	}
+
 	L := len(tasks)
 
 	if N > L {
@@ -72,6 +81,7 @@ func Run(tasks []func() error, N int, M int) error {
 			for _, waiter := range waiters {
 				<-waiter
 			}
+			<-ch
 			return fmt.Errorf("error")
 		}
 	}
@@ -79,15 +89,7 @@ func Run(tasks []func() error, N int, M int) error {
 	for _, waiter := range waiters {
 		<-waiter
 	}
+	<-ch
 
 	return nil
-}
-
-func aborted() bool {
-	select {
-	case <-abort:
-		return true
-	default:
-		return false
-	}
 }

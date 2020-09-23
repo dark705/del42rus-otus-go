@@ -112,26 +112,3 @@ func getTask(t string, testCh chan string) func() error {
 
 	return task
 }
-
-func getTasks2(testCh chan string) []func() error {
-
-	tasks := []func() error{func() error {
-		time.Sleep(1 * time.Second)
-		testCh <- fmt.Sprintf("Task #%d done work\n", 1)
-
-		return fmt.Errorf("error")
-	}, func() error {
-		time.Sleep(5 * time.Second)
-		testCh <- fmt.Sprintf("Task #%d done work\n", 2)
-
-		return nil
-	}, func() error {
-		time.Sleep(2 * time.Second)
-
-		testCh <- fmt.Sprintf("Task #%d done work\n", 3)
-
-		return nil
-	}}
-
-	return tasks
-}
