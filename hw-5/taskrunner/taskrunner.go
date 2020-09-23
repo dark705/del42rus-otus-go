@@ -25,19 +25,14 @@ func Run(tasks []func() error, N int, M int) error {
 	ch := make(chan func() error)
 
 	go func() {
-		defer func() {
-			close(ch)
-		}()
+		defer close(ch)
 
 		for _, task := range tasks {
 			if aborted() {
 				return
 			}
-
 			ch <- task
 		}
-
-		return
 	}()
 
 	errors := make(chan error, L)
@@ -49,9 +44,7 @@ func Run(tasks []func() error, N int, M int) error {
 		waiters = append(waiters, waiter)
 
 		go func(waiter chan struct{}) {
-			defer func() {
-				close(waiter)
-			}()
+			defer close(waiter)
 
 			for task := range ch {
 				errors <- task()
