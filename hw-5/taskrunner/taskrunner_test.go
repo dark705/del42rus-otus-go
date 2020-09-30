@@ -10,6 +10,17 @@ import (
 	"time"
 )
 
+func TestRunAllGoroutinesFinishedByDoneAllTasks(t *testing.T) {
+	testCh := make(chan string, 1000)
+	tasks := getTasks(1000, "rnd", testCh)
+	_ = Run(tasks, 100, 10)
+
+	n := runtime.NumGoroutine() - 2 //-1 main + -1 test itself
+	if n != 0 {
+		t.Error("Not all goroutines finished after Run() done by M errors:", n)
+	}
+}
+
 func TestRunAllGoroutinesFinishedByMErrors(t *testing.T) {
 	testCh := make(chan string, 1000)
 	tasks := getTasks(1000, "rnd", testCh)
@@ -39,20 +50,6 @@ func TestRunAllSuccessDone(t *testing.T) {
 	}
 }
 
-func TestRunExecuteNotMoreNPlusM(t *testing.T) {
-	nTask := 6
-	N := 3
-	M := 2
-
-	testCh := make(chan string, nTask)
-	tasks := getTasks(nTask, "err", testCh)
-	_ = Run(tasks, N, M)
-
-	if len(testCh) > N+M {
-		t.Error("Run() executed more then N + M tasks", len(testCh), N+M)
-	}
-}
-
 func TestRunReturnErrorByMLimit(t *testing.T) {
 	nTask := 10
 	N := 1000
@@ -64,6 +61,20 @@ func TestRunReturnErrorByMLimit(t *testing.T) {
 
 	if res == nil {
 		t.Error("Run() error tasks not return error by M limit")
+	}
+}
+
+func TestRunExecuteNotMoreNPlusM(t *testing.T) {
+	nTask := 10000
+	N := 100
+	M := 10
+
+	testCh := make(chan string, nTask)
+	tasks := getTasks(nTask, "err", testCh)
+	_ = Run(tasks, N, M)
+
+	if len(testCh) > N+M {
+		t.Error("Run() executed more then N + M tasks")
 	}
 }
 
