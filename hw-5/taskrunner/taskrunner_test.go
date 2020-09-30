@@ -40,9 +40,9 @@ func TestRunAllSuccessDone(t *testing.T) {
 }
 
 func TestRunExecuteNotMoreNPlusM(t *testing.T) {
-	nTask := 10
-	N := 1000
-	M := 10
+	nTask := 6
+	N := 3
+	M := 2
 
 	testCh := make(chan string, nTask)
 	tasks := getTasks(nTask, "err", testCh)

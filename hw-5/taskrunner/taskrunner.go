@@ -47,8 +47,16 @@ func Run(tasks []func() error, N int, M int) error {
 
 		go func(waiter chan struct{}) {
 			defer close(waiter)
-			for task := range ch {
-				errors <- task()
+			for {
+				select {
+				case <-abort:
+					return
+				case task, ok := <-ch:
+					if !ok {
+						return
+					}
+					errors <- task()
+				}
 			}
 		}(waiter)
 	}
